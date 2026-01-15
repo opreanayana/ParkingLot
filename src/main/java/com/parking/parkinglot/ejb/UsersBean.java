@@ -24,4 +24,10 @@ public class UsersBean {
                 .map(u -> new UserDto(u.getUsername(), u.getEmail()))
                 .collect(Collectors.toList());
     }
+
+    public List<User> findAllUserEntities() {
+        return entityManager
+                .createQuery("SELECT u FROM User u", User.class)
+                .getResultList();
+    }
 }

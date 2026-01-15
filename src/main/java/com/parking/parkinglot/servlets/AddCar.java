@@ -1,19 +1,23 @@
 package com.parking.parkinglot.servlets;
 
-import com.parking.parkinglot.common.CarDto;
 import com.parking.parkinglot.ejb.CarsBean;
+import com.parking.parkinglot.ejb.UsersBean;
+import com.parking.parkinglot.entities.User;
 import jakarta.inject.Inject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.util.ArrayList;
+
 import java.io.IOException;
 import java.util.List;
 
-@WebServlet(name = "Cars", value = "/Cars")
-public class Cars extends HttpServlet {
+@WebServlet(name = "AddCar", value = "/AddCar")
+public class AddCar extends HttpServlet {
+
+    @Inject
+    private UsersBean usersBean;
 
     @Inject
     private CarsBean carsBean;
@@ -22,12 +26,10 @@ public class Cars extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        List<CarDto> cars = carsBean.findAllCars();
-        request.setAttribute("cars", cars);
-        request.setAttribute("numberOfFreeParkingSpots", 10);
-        request.setAttribute("activePage", "Cars");
+        List<User> users = usersBean.findAllUserEntities();
+        request.setAttribute("users", users);
 
-        request.getRequestDispatcher("/WEB-INF/pages/cars.jsp")
+        request.getRequestDispatcher("/WEB-INF/pages/addCar.jsp")
                 .forward(request, response);
     }
 
@@ -35,17 +37,12 @@ public class Cars extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        String[] carIdsAsString = request.getParameterValues("car_ids");
+        String licensePlate = request.getParameter("license_plate");
+        String parkingSpot = request.getParameter("parking_spot");
+        Long userId = Long.parseLong(request.getParameter("owner_id"));
 
-        if (carIdsAsString != null) {
-            List<Long> carIds = new ArrayList<>();
-            for (String carIdAsString : carIdsAsString) {
-                carIds.add(Long.parseLong(carIdAsString));
-            }
-            carsBean.deleteCarsByIds(carIds);
-        }
+        carsBean.createCar(licensePlate, parkingSpot, userId);
 
         response.sendRedirect(request.getContextPath() + "/Cars");
     }
-
 }
